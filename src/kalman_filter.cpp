@@ -2,6 +2,21 @@
 
 #include <iostream>
 
+
+#include <cmath>
+
+// https://stackoverflow.com/a/11126083
+// Bring the 'difference' between two angles into [-pi; pi]
+template <int K, typename T>
+T normalize(T rad) {
+  // Copy the sign of the value in radians to the value of pi.
+  T signed_pi = std::copysign(M_PI, rad);
+  // Set the value of difference to the appropriate signed value between pi and -pi.
+  rad = std::fmod(rad + K * signed_pi,(2 * M_PI)) - K * signed_pi;
+  return rad;
+}
+
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -66,16 +81,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float phi = atan2(py, px);
   float rho_dot = (px*vx + py*vy) / rho;
 
-  VectorXd hx = VectorXd(3);
-  hx << rho, phi, rho_dot;
-
-  VectorXd y = z - hx;
-
-  //Normalize the angle between -pi to pi
-  while (y[1] < -M_PI)
-     y[1] += 2 * M_PI;
-  while (y[1] > M_PI)
-     y[1] -= 2 * M_PI;
+  // y = z - h(x')  including the normalization of phi after subtraction to be in range [-pi, pi]
+  VectorXd y(3);
+  y << z(0)-rho, normalize<1>(z(1) - phi), z(2) - rho_dot;
 
   _commonUpdate(y);
 }
