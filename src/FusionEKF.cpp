@@ -43,11 +43,6 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1, 0, 0, 0,
               0, 1, 0, 0;
 
-  //Measurement matrix - RADAR
-  Hj_ << 1, 1, 0, 0,
-         1, 1, 0, 0,
-         1, 1, 1, 1;
-
   //Initial transition matrix F_
   ekf_.F_ = MatrixXd(4, 4);
   ekf_.F_ << 1, 0, 1, 0,
@@ -87,7 +82,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
@@ -104,8 +98,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // TODO: Initialize state.
       // set the state with the initial location and zero velocity
-      ekf_.x_ << measurement_pack.raw_measurements_[0],
-                 measurement_pack.raw_measurements_[1],
+      ekf_.x_ << measurement_pack.raw_measurements_(0),
+                 measurement_pack.raw_measurements_(1),
                  0,
                  0;
     }
